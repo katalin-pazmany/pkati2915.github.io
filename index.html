@@ -296,7 +296,7 @@ h2 em{font-style:italic;color:var(--accent-2);font-weight:300}
 .fact-body span{font-size:.85rem;color:var(--ink-dim)}
 
 /* PROJECTS */
-.projects{display:grid;grid-template-columns:repeat(auto-fit,minmax(500px,1fr));gap:24px}
+.projects{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:24px}
 .project{
   position:relative;padding:32px;border-radius:22px;
   background:linear-gradient(165deg,rgba(255,255,255,0.06) 0%,rgba(255,255,255,0.02) 100%);
@@ -347,7 +347,7 @@ h2 em{font-style:italic;color:var(--accent-2);font-weight:300}
 
 /* project image thumbnail */
 .project-img{
-  width:100%;height:380px;object-fit:cover;border-radius:12px;
+  width:100%;height:180px;object-fit:cover;border-radius:12px;
   margin-bottom:18px;display:block;
   filter:saturate(1.05) contrast(1.02);
   border:1px solid var(--border);
@@ -817,7 +817,7 @@ footer .row span{font-family:'JetBrains Mono',monospace}
         </a>
       </div>
     </div>
-    <form onsubmit="handleSubmit(event)">
+    <form id="contact-form" onsubmit="handleSubmit(event)">
       <div class="field">
         <label for="name">// your name</label>
         <input type="text" id="name" name="name" required placeholder="Jane Doe">
@@ -834,11 +834,16 @@ footer .row span{font-family:'JetBrains Mono',monospace}
         <label for="message">// message</label>
         <textarea id="message" name="message" required placeholder="Tell me about the role, the problem, or the dataset that's bothering you."></textarea>
       </div>
-      <button type="submit" class="btn btn-primary" style="align-self:flex-start;">
+      <button type="submit" id="submit-btn" class="btn btn-primary" style="align-self:flex-start;">
         Send message
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
       </button>
     </form>
+    <div id="form-success" style="display:none;padding:32px;border-radius:16px;background:rgba(74,222,128,0.08);border:1px solid rgba(74,222,128,0.25);text-align:center;">
+      <div style="font-size:2rem;margin-bottom:12px;">&#10003;</div>
+      <p style="color:#4ade80;font-size:1.1rem;font-weight:500;margin-bottom:8px;">Message sent!</p>
+      <p style="color:var(--ink-dim);font-size:.95rem;">Thanks for reaching out — I'll get back to you soon.</p>
+    </div>
   </div>
 </section>
 
@@ -870,13 +875,28 @@ document.querySelectorAll('.project').forEach(p => {
   });
 });
 
-// Contact form — opens email client with prefilled message
-function handleSubmit(e){
+// Contact form — Formspree submission
+async function handleSubmit(e){
   e.preventDefault();
-  const f = e.target;
-  const name = f.name.value, email = f.email.value, subject = f.subject.value, message = f.message.value;
-  const body = `From: ${name} <${email}>\n\n${message}`;
-  window.location.href = `mailto:pazmany.katalin2915@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  const btn = document.getElementById('submit-btn');
+  btn.textContent = 'Sending...';
+  btn.disabled = true;
+  const data = new FormData(e.target);
+  try {
+    const res = await fetch('https://formspree.io/f/mojzzvkj', {
+      method: 'POST', body: data, headers: { 'Accept': 'application/json' }
+    });
+    if (res.ok) {
+      document.getElementById('contact-form').style.display = 'none';
+      document.getElementById('form-success').style.display = 'block';
+    } else {
+      btn.textContent = 'Something went wrong — try emailing directly.';
+      btn.disabled = false;
+    }
+  } catch {
+    btn.textContent = 'Something went wrong — try emailing directly.';
+    btn.disabled = false;
+  }
 }
 
 // Nav shrink on scroll
